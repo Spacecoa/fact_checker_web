@@ -57,3 +57,13 @@
 - Telegram bot integration
 - Export functionality (JSON, Markdown)
 - Web adapter for fact-checking program integration
+
+## Design & Styling
+- [x] Criar design minimalista de blog para homepage
+- [x] Redesenhar dashboard com layout de blog
+- [x] Melhorar visualização de relatórios individuais
+- [x] Adicionar tipografia elegante e espaçamento
+- [x] Criar sistema de cores minimalista
+- [x] Adicionar animações suaves
+- [x] Otimizar responsividade mobile
+- [x] Criar componentes de card para relatórios

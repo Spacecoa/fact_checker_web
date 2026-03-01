@@ -5,16 +5,16 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
-import ReportDetail from "./pages/ReportDetail";
+import DashboardBlog from "./pages/DashboardBlog";
+import ReportDetailBlog from "./pages/ReportDetailBlog";
 import DashboardLayout from "./components/DashboardLayout";
 
 function Router() {
   return (
     <Switch>
       <Route path={"/(index)?"} component={Home} />
-      <Route path={"/dashboard"} component={() => <DashboardLayout><Dashboard /></DashboardLayout>} />
-      <Route path={"/reports/:id"} component={(props: any) => <DashboardLayout><ReportDetail id={props.params.id} /></DashboardLayout>} />
+      <Route path={"/dashboard"} component={() => <DashboardLayout><DashboardBlog /></DashboardLayout>} />
+      <Route path={"/reports/:id"} component={(props: any) => <DashboardLayout><ReportDetailBlog id={props.params.id} /></DashboardLayout>} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
