@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, factCheckReports, InsertFactCheckReport, telegramUsers, InsertTelegramUser } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -87,6 +87,88 @@ export async function getUserByOpenId(openId: string) {
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
 
   return result.length > 0 ? result[0] : undefined;
+}
+
+// Fact-checking reports queries
+export async function getFactCheckReports(limit: number = 50, offset: number = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  const results = await db.select().from(factCheckReports).orderBy((t) => t.createdAt).limit(limit).offset(offset);
+  return results;
+}
+
+export async function getFactCheckReportById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const results = await db.select().from(factCheckReports).where(eq(factCheckReports.id, id)).limit(1);
+  return results.length > 0 ? results[0] : undefined;
+}
+
+export async function getFactCheckReportByReportId(reportId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const results = await db.select().from(factCheckReports).where(eq(factCheckReports.reportId, reportId)).limit(1);
+  return results.length > 0 ? results[0] : undefined;
+}
+
+export async function createFactCheckReport(report: InsertFactCheckReport) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.insert(factCheckReports).values(report);
+  return result;
+}
+
+export async function updateFactCheckReport(id: number, data: Partial<InsertFactCheckReport>) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.update(factCheckReports).set(data).where(eq(factCheckReports.id, id));
+  return result;
+}
+
+export async function getFactCheckReportStats() {
+  const db = await getDb();
+  if (!db) return { total: 0, verified: 0, unverified: 0, bySource: {} };
+  
+  const reports = await db.select().from(factCheckReports);
+  const total = reports.length;
+  const verified = reports.filter(r => r.isVerified).length;
+  const unverified = total - verified;
+  
+  const bySource: Record<string, number> = {};
+  reports.forEach(r => {
+    bySource[r.source] = (bySource[r.source] || 0) + 1;
+  });
+  
+  return { total, verified, unverified, bySource };
+}
+
+// Telegram users queries
+export async function getTelegramUserByTelegramId(telegramId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const results = await db.select().from(telegramUsers).where(eq(telegramUsers.telegramId, telegramId)).limit(1);
+  return results.length > 0 ? results[0] : undefined;
+}
+
+export async function createOrUpdateTelegramUser(user: InsertTelegramUser) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.insert(telegramUsers).values(user).onDuplicateKeyUpdate({
+    set: {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      updatedAt: new Date(),
+    },
+  });
+  return result;
+}
+
+export async function getSubscribedTelegramUsers() {
+  const db = await getDb();
+  if (!db) return [];
+  const results = await db.select().from(telegramUsers).where(eq(telegramUsers.isSubscribed, true));
+  return results;
 }
 
 // TODO: add feature queries here as your schema grows.
