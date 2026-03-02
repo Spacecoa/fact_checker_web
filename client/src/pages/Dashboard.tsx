@@ -132,15 +132,15 @@ export default function Dashboard() {
             </div>
 
             {/* Source Filter */}
-            <Select value={source || ""} onValueChange={(value) => {
-              setSource(value || undefined);
+            <Select value={source || "all"} onValueChange={(value) => {
+              setSource(value === "all" ? undefined : value);
               setPage(1);
             }}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma fonte..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as fontes</SelectItem>
+                <SelectItem value="all">Todas as fontes</SelectItem>
                 {sources.map((src) => (
                   <SelectItem key={src} value={src}>
                     {src}
@@ -150,15 +150,15 @@ export default function Dashboard() {
             </Select>
 
             {/* Status Filter */}
-            <Select value={verificationStatus || ""} onValueChange={(value) => {
-              setVerificationStatus(value || undefined);
+            <Select value={verificationStatus || "all"} onValueChange={(value) => {
+              setVerificationStatus(value === "all" ? undefined : value);
               setPage(1);
             }}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione um status..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os status</SelectItem>
+                <SelectItem value="all">Todos os status</SelectItem>
                 <SelectItem value="unverified">Não Verificado</SelectItem>
                 <SelectItem value="verified">Verificado</SelectItem>
                 <SelectItem value="partially_verified">Parcialmente Verificado</SelectItem>

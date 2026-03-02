@@ -238,15 +238,15 @@ export default function DashboardEnhanced() {
             />
           </div>
 
-          <Select value={sourceFilter} onValueChange={(value) => {
-            setSourceFilter(value);
+          <Select value={sourceFilter || "all"} onValueChange={(value) => {
+            setSourceFilter(value === "all" ? "" : value);
             setPage(1);
           }}>
             <SelectTrigger>
               <SelectValue placeholder="Filtrar por fonte..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas as fontes</SelectItem>
+              <SelectItem value="all">Todas as fontes</SelectItem>
               {sources.map((source) => (
                 <SelectItem key={source} value={source}>
                   {source}
@@ -255,15 +255,15 @@ export default function DashboardEnhanced() {
             </SelectContent>
           </Select>
 
-          <Select value={statusFilter} onValueChange={(value) => {
-            setStatusFilter(value);
+          <Select value={statusFilter || "all"} onValueChange={(value) => {
+            setStatusFilter(value === "all" ? "" : (value as any));
             setPage(1);
           }}>
             <SelectTrigger>
               <SelectValue placeholder="Filtrar por status..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos os status</SelectItem>
+              <SelectItem value="all">Todos os status</SelectItem>
               <SelectItem value="unverified">Não Verificado</SelectItem>
               <SelectItem value="verified">Verificado</SelectItem>
               <SelectItem value="partially_verified">Parcialmente Verificado</SelectItem>
