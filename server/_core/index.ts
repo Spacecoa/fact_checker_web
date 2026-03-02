@@ -7,6 +7,8 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { initializeJobScheduler } from "../services/jobScheduler";
+import { handleTelegramUpdate } from "../services/telegramBot";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -35,6 +37,23 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  
+  // Telegram webhook endpoint
+  app.post("/api/telegram/webhook", async (req, res) => {
+    try {
+      await handleTelegramUpdate(req.body);
+      res.json({ ok: true });
+    } catch (error) {
+      console.error("[Telegram Webhook] Error:", error);
+      res.status(500).json({ ok: false, error: "Internal server error" });
+    }
+  });
+  
+  // Health check endpoint
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+  
   // tRPC API
   app.use(
     "/api/trpc",
@@ -50,6 +69,9 @@ async function startServer() {
     serveStatic(app);
   }
 
+  // Initialize job scheduler
+  initializeJobScheduler();
+  
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
 
@@ -59,6 +81,15 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+  });
+  
+  // Graceful shutdown
+  process.on("SIGTERM", () => {
+    console.log("SIGTERM received, shutting down gracefully...");
+    server.close(() => {
+      console.log("Server closed");
+      process.exit(0);
+    });
   });
 }
 

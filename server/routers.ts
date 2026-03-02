@@ -4,6 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { factCheckerRouter } from "./routers/factChecker";
 import { telegramRouter } from "./routers/telegram";
+import { reportsRouter } from "./routers/reports";
 
 export const appRouter = router({
   system: systemRouter,
@@ -19,6 +20,7 @@ export const appRouter = router({
   }),
   factChecker: factCheckerRouter,
   telegram: telegramRouter,
+  reports: reportsRouter,
 });
 
 export type AppRouter = typeof appRouter;

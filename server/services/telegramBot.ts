@@ -1,5 +1,8 @@
 import axios from "axios";
+import { getDb } from "../db";
 import { getFactCheckReports, getFactCheckReportStats, getTelegramUserByTelegramId } from "../db";
+import { factCheckReports, telegramUsers } from "../../drizzle/schema";
+import { eq } from "drizzle-orm";
 
 const TELEGRAM_API_URL = "https://api.telegram.org/bot";
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -191,6 +194,55 @@ function escapeHtml(text: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+/**
+ * Send notifications for newly verified reports
+ */
+export async function sendNotificationsForNewReports(): Promise<number> {
+  try {
+    const db = await getDb();
+    if (!db) {
+      console.warn("[TelegramBot] Database not available");
+      return 0;
+    }
+
+       // Get recently verified reports that haven't been notified
+    const recentReports = await db
+      .select()
+      .from(factCheckReports)
+      .where(eq(factCheckReports.isVerified, true as any))
+      .limit(5);
+
+    let notificationCount = 0;
+
+    // Get all subscribed telegram users
+    const users = await db
+      .select()
+      .from(telegramUsers)
+      .where(eq(telegramUsers.isSubscribed, true as any));
+
+    for (const report of recentReports) {
+      for (const user of users) {
+        const success = await sendReportNotification(
+          user.telegramId,
+          report.id,
+          report.title,
+          report.mainClaim,
+          report.source
+        );
+        if (success) {
+          notificationCount++;
+        }
+      }
+    }
+
+    console.log(`[TelegramBot] Sent ${notificationCount} notifications`);
+    return notificationCount;
+  } catch (error) {
+    console.error("[TelegramBot] Error sending notifications:", error);
+    return 0;
+  }
 }
 
 /**
